@@ -15,7 +15,7 @@ srvr.use(cors());
 srvr.use(express.json());
 
 srvr.use("/api/auth", authRouter);
-srvr.use("api/contents", contentRouter);
+srvr.use("/api/content", contentRouter);
 
 srvr.get("/", (req, res) => {
   res.send("Backend is running");

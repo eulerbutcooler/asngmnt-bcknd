@@ -84,7 +84,7 @@ export const getStats = async (req: Request, res: Response) => {
 
 export const searchContent = async (req: Request, res: Response) => {
   try {
-    const { keyword, status } = req.body();
+    const { keyword, status } = req.query;
     let query: any = {};
 
     if (status) {
