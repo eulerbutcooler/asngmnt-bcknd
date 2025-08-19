@@ -24,3 +24,11 @@ const contentSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+contentSchema.index(
+  { title: "text", description: "text" },
+  { weights: { title: 10, description: 5 } }
+);
+
+const Content = mongoose.model("Content", contentSchema);
+export default Content;
