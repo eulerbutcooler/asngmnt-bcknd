@@ -12,7 +12,7 @@ export const createContent = async (req: Request, res: Response) => {
     const content = await newContent.save();
     res.status(201).json(content);
   } catch (error) {
-    res.status(500).json({ message: "Server error while creating content." });
+    res.status(500).json({ message: "Error while creating content." });
   }
 };
 
@@ -28,7 +28,7 @@ export const getContents = async (req: Request, res: Response) => {
     }
     res.json(contents);
   } catch (error) {
-    res.status(500).json({ message: "Server error while fetching content." });
+    res.status(500).json({ message: "Error while fetching content." });
   }
 };
 
@@ -44,7 +44,7 @@ export const approveContent = async (req: Request, res: Response) => {
     }
     res.json(content);
   } catch (error) {
-    res.status(500).json({ message: "Server error while approving content." });
+    res.status(500).json({ message: "Error while approving content." });
   }
 };
 
@@ -60,6 +60,58 @@ export const rejectContent = async (req: Request, res: Response) => {
     }
     res.json(content);
   } catch (error) {
-    res.status(500).json({ message: "Server error while rejecting content." });
+    res.status(500).json({ message: "Error while rejecting content." });
+  }
+};
+
+export const getStats = async (req: Request, res: Response) => {
+  try {
+    const approvedCount = await Content.countDocuments({ status: "approved" });
+    const pendingCount = await Content.countDocuments({ status: "pending" });
+    const rejectedCount = await Content.countDocuments({ status: "rejected" });
+    const totalCount = approvedCount + pendingCount + rejectedCount;
+
+    res.json({
+      approved: approvedCount,
+      pending: pendingCount,
+      rejected: rejectedCount,
+      total: totalCount,
+    });
+  } catch {
+    res.status(500).json({ message: "Error fetching analytics" });
+  }
+};
+
+export const searchContent = async (req: Request, res: Response) => {
+  try {
+    const { keyword, status } = req.body();
+    let query: any = {};
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (keyword) {
+      query.$text = { $search: keyword as string };
+    }
+
+    const contents = await Content.find(query).populate("createdBy", "email");
+    res.json(contents);
+  } catch {
+    res.status(500).json({ message: "Error searching content" });
+  }
+};
+
+export const getRecentActivity = async (req: Request, res: Response) => {
+  try {
+    const recentActivity = await Content.find({
+      status: { $in: ["approved", "rejected"] },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("createdBy", "email");
+    res.json(recentActivity);
+  } catch {
+    res.status(500).json({ message: "Error fetching recent activity" });
   }
 };
